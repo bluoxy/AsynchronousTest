@@ -123,11 +123,12 @@ namespace ListCollectionViewAsynchronousTest
         public MainWindow()
         {
             InitializeComponent();
+            //NOTE:プロパティの初期化は基本ここに書けばいいよ
 
-            //for (int i = 0; i < 500; i++)
-            //{
-            //    this.List.Add(new MDB() { OrderingValue = count++.ToString("000000000"), Item1 = "q", Item2 = "7", Item3 = "い" });
-            //}
+            for (int i = 0; i < 500; i++)
+            {
+                this.List.Add(new MDB() { OrderingValue = count++.ToString("000000000"), Item1 = (1000000000 - count++).ToString(), Item2 = "7", Item3 = "い" });
+            }
 
             this.TestList = new ObservableCollection<MDB>(List);
 
@@ -146,6 +147,12 @@ namespace ListCollectionViewAsynchronousTest
         }
 
 
+        /*NOTE:
+         * 動かしたい処理は、RunCMDメソッドとStopCMDメソッドに
+         * dispatherTimer.Tick +=(StopCMDは-=) newEventHandler(追加するイベントハンドラ);
+         * という形でコードを追加すれば、タイマーイベントに沿って動くよ
+         * もちろんイベントハンドラの処理は自分で打ってね
+        */
         public void RunCMD(object sender, RoutedEventArgs e)
         {
             logger.Info("Runボタン押下");
@@ -181,9 +188,6 @@ namespace ListCollectionViewAsynchronousTest
             if (isRunning)
             {
                 isRunning = false;
-                //並び替えをぶつける
-                //dispatcherTimer.Tick -= new EventHandler(ListSort);
-                //dispatcherTimer.Tick -= new EventHandler(ListSortDescending);
 
                 //Model側の検証
                 dispatcherTimer.Tick -= new EventHandler(ListAdd);
@@ -205,8 +209,8 @@ namespace ListCollectionViewAsynchronousTest
         #endregion
 
         #region Listのソートを二つぶつける
-        //以下ソート2つを排他なしでぶつけるとNullReferenceExceptionの例外を吐く
 
+        //NOTE:以下ソート2つを排他なしでぶつけるとNullReferenceExceptionの例外を吐いた
         public void ListSort(object sender, EventArgs e)
         {
             System.Threading.Tasks.Task.Factory.StartNew(() =>
@@ -244,6 +248,7 @@ namespace ListCollectionViewAsynchronousTest
 
         #region Model側の検証
 
+        //NOTE:よくわからんが、そこそこ放置したらArgumentException吐いた。なぜ…
         public void ListAdd(object sender, EventArgs e)
         {
             System.Threading.Tasks.Task.Factory.StartNew(() =>
@@ -340,12 +345,13 @@ namespace ListCollectionViewAsynchronousTest
         #endregion
 
         #region ViewModel側の検証
+        //良好。まあUIスレッド動かしてるから、完全に同期してる。マルチスレッドではない。
 
         public void ObservalCollectionAdd(object sender, EventArgs e)
         {
             App.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                this.TestList.Add(new JAMTD() { OrderingValue = count++.ToString("000000000"), Item1 = "q", Item2 = "7", Item3 = "い", Item4 = "p", Item5 = "6"});
+                this.TestList.Add(new JAMTD() { OrderingValue = count++.ToString("000000000"), Item1 = (1000000000 - count++).ToString(), Item2 = "7", Item3 = "い", Item4 = "p", Item5 = "6" });
                 logger.Info("Worked");
 
                 if (count > 999999999) count = 0;

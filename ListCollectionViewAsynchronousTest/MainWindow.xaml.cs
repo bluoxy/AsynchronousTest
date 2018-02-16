@@ -159,9 +159,12 @@ namespace ListCollectionViewAsynchronousTest
                 //dispatcherTimer.Tick += new EventHandler(ListSortDescending);
 
                 //Model側の検証
-                //dispatcherTimer.Tick += new EventHandler(ListAdd);
-                //dispatcherTimer.Tick += new EventHandler(ListFindAllOrderBy);
-                //dispatcherTimer.Tick += new EventHandler(ListOrderByToList);
+                dispatcherTimer.Tick += new EventHandler(ListAdd);
+                dispatcherTimer.Tick += new EventHandler(ListFindAll);
+                dispatcherTimer.Tick += new EventHandler(ListFindAllOrderBy);
+                dispatcherTimer.Tick += new EventHandler(ListFindAllOrderBy2);
+                dispatcherTimer.Tick += new EventHandler(ListFindAllOrderBy3);
+                dispatcherTimer.Tick += new EventHandler(ListOrderByToList);
 
                 //ViewModel側の検証
                 dispatcherTimer.Tick += new EventHandler(ObservalCollectionAdd);
@@ -183,9 +186,12 @@ namespace ListCollectionViewAsynchronousTest
                 //dispatcherTimer.Tick -= new EventHandler(ListSortDescending);
 
                 //Model側の検証
-                //dispatcherTimer.Tick -= new EventHandler(ListAdd);
-                //dispatcherTimer.Tick -= new EventHandler(ListFindAllOrderBy);
-                //dispatcherTimer.Tick -= new EventHandler(ListOrderByToList);
+                dispatcherTimer.Tick -= new EventHandler(ListAdd);
+                dispatcherTimer.Tick -= new EventHandler(ListFindAll);
+                dispatcherTimer.Tick -= new EventHandler(ListFindAllOrderBy);
+                dispatcherTimer.Tick -= new EventHandler(ListFindAllOrderBy2);
+                dispatcherTimer.Tick -= new EventHandler(ListFindAllOrderBy3);
+                dispatcherTimer.Tick -= new EventHandler(ListOrderByToList);
 
                 //ViewModel側の検証
                 dispatcherTimer.Tick -= new EventHandler(ObservalCollectionAdd);
@@ -242,10 +248,26 @@ namespace ListCollectionViewAsynchronousTest
         {
             System.Threading.Tasks.Task.Factory.StartNew(() =>
             {
-                this.List.Add(new MDB() { OrderingValue = count++.ToString("000000000"), Item1 = "q", Item2 = "7", Item3 = "い" });
+                this.List.Add(new MDB() { OrderingValue = count.ToString("000000000"), Item1 = (1000000000-count++).ToString(), Item2 = "7", Item3 = "い" });
                 logger.Info("Worked List.Add");
-                this.List2.Add(new MDB() { OrderingValue = count++.ToString("000000000"), Item1 = "r", Item2 = "8", Item3 = "ろ" });
+                this.List2.Add(new MDB() { OrderingValue = count.ToString("000000000"), Item1 = (1000000000 - count++).ToString(), Item2 = "7", Item3 = "い" });
                 logger.Info("Worked List2.Add");
+            });
+        }
+
+        public void ListFindAll(object sender, EventArgs e)
+        {
+            System.Threading.Tasks.Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    var list = this.List.FindAll(v => v.Item1 == "q");
+                    logger.Info("Worked");
+                }
+                catch (NullReferenceException)
+                {
+                    logger.Error("NullReferenceException");
+                }
             });
         }
 
@@ -256,6 +278,38 @@ namespace ListCollectionViewAsynchronousTest
                 try
                 {
                     var list = this.List.FindAll(v => v.Item1 == "q").OrderBy(v => v.OrderingValue);
+                    logger.Info("Worked");
+                }
+                catch (NullReferenceException)
+                {
+                    logger.Error("NullReferenceException");
+                }
+            });
+        }
+
+        public void ListFindAllOrderBy2(object sender, EventArgs e)
+        {
+            System.Threading.Tasks.Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    var list = this.List.FindAll(v => v.OrderingValue.CompareTo("200") <= 0).OrderBy(v => v.OrderingValue);
+                    logger.Info("Worked");
+                }
+                catch (NullReferenceException)
+                {
+                    logger.Error("NullReferenceException");
+                }
+            });
+        }
+
+        public void ListFindAllOrderBy3(object sender, EventArgs e)
+        {
+            System.Threading.Tasks.Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    var list = this.List.FindAll(v => (v.Item2 == "7") && (v.OrderingValue.CompareTo("200") <= 0)).OrderBy(v => v.OrderingValue);
                     logger.Info("Worked");
                 }
                 catch (NullReferenceException)
